@@ -19,7 +19,7 @@ namespace STOApi.Controllers
             this.tournamentRepository = tournamentRepository;
         }
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Roles = "organizer", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public JsonResult AddTournament(){
             bool created = tournamentRepository.AddTournament();

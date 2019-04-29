@@ -46,6 +46,7 @@ namespace STOApi
 
             services.AddTransient<IAuthRepository, AuthRepository>();
             services.AddTransient<IAdminRepository, AdminRepository>();
+            services.AddTransient<ITournamentRepository, TournamentRepository>();
 
             services.AddCors(options =>
             {
