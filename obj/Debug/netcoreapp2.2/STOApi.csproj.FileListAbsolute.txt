@@ -1,0 +1,14 @@
+/home/andrew/Documents/Projects/STOApi/bin/Debug/netcoreapp2.2/STOApi.deps.json
+/home/andrew/Documents/Projects/STOApi/bin/Debug/netcoreapp2.2/STOApi.runtimeconfig.json
+/home/andrew/Documents/Projects/STOApi/bin/Debug/netcoreapp2.2/STOApi.runtimeconfig.dev.json
+/home/andrew/Documents/Projects/STOApi/bin/Debug/netcoreapp2.2/STOApi.dll
+/home/andrew/Documents/Projects/STOApi/bin/Debug/netcoreapp2.2/STOApi.pdb
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.csprojAssemblyReference.cache
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.csproj.CoreCompileInputs.cache
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.RazorAssemblyInfo.cache
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.RazorAssemblyInfo.cs
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.AssemblyInfoInputs.cache
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.AssemblyInfo.cs
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.RazorTargetAssemblyInfo.cache
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.dll
+/home/andrew/Documents/Projects/STOApi/obj/Debug/netcoreapp2.2/STOApi.pdb
