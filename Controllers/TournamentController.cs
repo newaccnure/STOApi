@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Cors;
 using System.Net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace STOApi.Controllers
 {
@@ -21,15 +22,18 @@ namespace STOApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "organizer", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public JsonResult AddTournament(){
-            bool created = tournamentRepository.AddTournament();
-            JsonResult jr = Json(created);
-            if (!created)
+        public JsonResult AddTournament(string name, int sportId, int eventFormatId)
+        {
+            int tournamentId = tournamentRepository.AddTournament(name, sportId, eventFormatId);
+            JsonResult jr = Json(tournamentId);
+            if (tournamentId == 0)
             {
                 jr.StatusCode = 401;
-                return jr;
             }
-            jr.StatusCode = 200;
+            else
+            {
+                jr.StatusCode = 200;
+            }
             return jr;
         }
 

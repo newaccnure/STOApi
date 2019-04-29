@@ -7,7 +7,6 @@ namespace STOApi.Entities
     {
         public int Id { set; get; }
         public string Name { set; get; }
-        public string Password { set; get; }
         public Schedule Schedule { set; get; }
         public int EventFormatId { set; get; }
         public EventFormat EventFormat { set; get; }

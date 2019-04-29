@@ -13,7 +13,7 @@ namespace STOApi.Models
         public DbSet<Schedule> Schedules { set; get; }
         public DbSet<Game> Games { set; get; }
         public DbSet<Sport> Sports { set; get; }
-        public DbSet<EventFormat> EventFormat { set; get; }
+        public DbSet<EventFormat> EventFormats { set; get; }
 
         public STOContext(DbContextOptions<STOContext> options) : base(options)
         {

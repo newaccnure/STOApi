@@ -14,7 +14,16 @@ namespace STOApi.Interfaces
 {
     public interface IAdminRepository
     {
+        Sport AddSport(string name);
+        EventFormat AddEventFormat(string name);
+        bool DeleteSport(int sportId);
+        bool DeleteEventFormat(int eventFormatId);
+        bool DeleteTournament(int tournamentId);
         List<User> GetUsers();
         List<Tournament> GetTournaments();
+        List<Sport> GetSports();
+        List<EventFormat> GetEventFormats();
+
+
     }
 }

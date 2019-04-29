@@ -14,6 +14,6 @@ namespace STOApi.Interfaces
 {
     public interface ITournamentRepository
     {
-        bool AddTournament();
+        int AddTournament(string name, int sportId, int eventFormatId);
     }
 }

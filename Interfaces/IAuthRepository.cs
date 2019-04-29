@@ -15,7 +15,7 @@ namespace STOApi.Interfaces
     public interface IAuthRepository
     {
         TokenResponse Login(string username, string password);
-        TokenResponse AddUser(string username, string password, string repeatPassword, string role);
+        TokenResponse AddUser(string username, string password, string repeatPassword, string role, string aboutMe);
 
     }
 }

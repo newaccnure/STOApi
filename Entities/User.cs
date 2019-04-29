@@ -9,6 +9,7 @@ namespace STOApi.Entities
         public string Role { set; get; }
         public string Password { set; get; }
         public byte[] Image { set; get; }
+        public string AboutMeInfo { set; get; }
         public List<UserTournament> UserTournaments { set; get; }
 
         //json version of List<User>

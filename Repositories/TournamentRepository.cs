@@ -22,9 +22,10 @@ namespace STOApi.Repositories
             this.context = context;
         }
 
-        public bool AddTournament()
+        public int AddTournament(string name, int sportId, int eventFormatId)
         {
-            throw new NotImplementedException();
+            
+            return 0;
         }
 
     }

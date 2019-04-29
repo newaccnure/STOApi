@@ -30,7 +30,7 @@ namespace STOApi.Repositories
             this.context = context;
         }
 
-        public TokenResponse AddUser(string email, string password, string repeatPassword, string role)
+        public TokenResponse AddUser(string email, string password, string repeatPassword, string role, string aboutMe)
         {
             if (context.Users.Where(x => x.Email == email && x.Role == role).Any())
             {
@@ -51,7 +51,8 @@ namespace STOApi.Repositories
             {
                 Email = email,
                 Password = password,
-                Role = role
+                Role = role,
+                AboutMeInfo = aboutMe
             });
             context.SaveChanges();
 
