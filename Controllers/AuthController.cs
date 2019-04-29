@@ -49,11 +49,5 @@ namespace STOApi.Controllers
             }
             return jr;
         }
-        [HttpGet]
-        public JsonResult GetUsers()
-        {
-            return Json(authRepository.GetUsers());
-        }
-
     }
 }

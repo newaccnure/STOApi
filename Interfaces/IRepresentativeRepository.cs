@@ -13,10 +13,8 @@ using STOApi.Entities;
 
 namespace STOApi.Interfaces
 {
-    public interface IAuthRepository
+    public interface IRepresentativeRepository
     {
-        TokenResponse Login(string username, string password);
-        TokenResponse AddUser(string username, string password, string repeatPassword, string role, string aboutMe);
-
+        bool AddParticipantsToTournament(int tournamentId, List<string> participantsEmails);
     }
 }

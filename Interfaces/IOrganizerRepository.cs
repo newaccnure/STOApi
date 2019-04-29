@@ -16,6 +16,11 @@ namespace STOApi.Interfaces
     public interface IOrganizerRepository
     {
         Tournament AddTournament(string name, int sportId, int eventFormatId);
+        bool AutoGenerateTournamentSchedule(int tournamentId, int gameTime, 
+            int breakTime, DateTime startDate, DateTime endDate);
+        bool AddRepresentativesToTournament(int tournamentId, 
+            List<string> representativesEmails);
         
+        List<User> GetTournamentRepresentatives(int tournamentId);
     }
 }

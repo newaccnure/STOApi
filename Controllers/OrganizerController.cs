@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using STOApi.Entities;
+using System;
 
 namespace STOApi.Controllers
 {
@@ -37,6 +38,30 @@ namespace STOApi.Controllers
             }
             return jr;
         }
-
+        [HttpPost]
+        public JsonResult AddRepresentativesToTournament(int tournamentId, List<string> representativesEmails){
+            bool added = organizerRepository.AddRepresentativesToTournament(tournamentId, representativesEmails);
+            JsonResult jr = Json(added);
+            if (!added)
+            {
+                jr.StatusCode = 400;
+            }
+            else
+            {
+                jr.StatusCode = 200;
+            }
+            return jr;
+        }
+        [HttpPost]
+        public JsonResult AutoGenerateTournamentSchedule(int tournamentId, int gameTime, int breakTime, DateTime startDate, DateTime endDate)
+        {
+            throw new NotImplementedException();
+        }
+        [HttpPost]
+        public JsonResult GetTournamentRepresentatives(int tournamentId)
+        {
+            
+            return Json(organizerRepository.GetTournamentRepresentatives(tournamentId));
+        }
     }
 }

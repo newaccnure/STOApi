@@ -14,7 +14,7 @@ namespace STOApi.Models
         public DbSet<Game> Games { set; get; }
         public DbSet<Sport> Sports { set; get; }
         public DbSet<EventFormat> EventFormats { set; get; }
-
+        public DbSet<UserTournament> UserTournament {set;get;}
         public STOContext(DbContextOptions<STOContext> options) : base(options)
         {
         }
