@@ -9,11 +9,13 @@ using System.IdentityModel.Tokens.Jwt;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using STOApi.Models;
+using STOApi.Entities;
 
 namespace STOApi.Interfaces
 {
-    public interface ITournamentRepository
+    public interface IOrganizerRepository
     {
-        int AddTournament(string name, int sportId, int eventFormatId);
+        Tournament AddTournament(string name, int sportId, int eventFormatId);
+        
     }
 }

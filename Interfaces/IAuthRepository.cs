@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using STOApi.Models;
+using STOApi.Entities;
 
 namespace STOApi.Interfaces
 {
@@ -16,6 +17,7 @@ namespace STOApi.Interfaces
     {
         TokenResponse Login(string username, string password);
         TokenResponse AddUser(string username, string password, string repeatPassword, string role, string aboutMe);
+        List<User> GetUsers();
 
     }
 }

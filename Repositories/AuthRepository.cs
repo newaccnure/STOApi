@@ -106,5 +106,9 @@ namespace STOApi.Repositories
 
             return null;
         }
+        public List<User> GetUsers()
+        {
+            return context.Users.ToList();
+        }
     }
 }

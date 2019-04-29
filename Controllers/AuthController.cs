@@ -20,7 +20,17 @@ namespace STOApi.Controllers
         [HttpPost]
         public JsonResult Login(string username, string password)
         {
-            return Json(authRepository.Login(username, password));
+            TokenResponse tp = authRepository.Login(username, password);
+            JsonResult jr = Json(tp);
+            if (tp.Email == null)
+            {
+                jr.StatusCode = 400;
+            }
+            else
+            {
+                jr.StatusCode = 200;
+            }
+            return jr;
         }
 
         [HttpPost]
@@ -31,11 +41,18 @@ namespace STOApi.Controllers
             JsonResult jr = Json(tp);
             if (tp.Email == null)
             {
-                jr.StatusCode = 401;
-                return jr;
+                jr.StatusCode = 400;
             }
-            jr.StatusCode = 200;
+            else
+            {
+                jr.StatusCode = 200;
+            }
             return jr;
+        }
+        [HttpGet]
+        public JsonResult GetUsers()
+        {
+            return Json(authRepository.GetUsers());
         }
 
     }

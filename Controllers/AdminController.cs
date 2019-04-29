@@ -28,7 +28,7 @@ namespace STOApi.Controllers
             JsonResult jr = Json(sport);
             if (sport.Id == 0)
             {
-                jr.StatusCode = 401;
+                jr.StatusCode = 400;
             }
             else
             {
@@ -43,7 +43,7 @@ namespace STOApi.Controllers
             JsonResult jr = Json(eventFormat);
             if (eventFormat.Id == 0)
             {
-                jr.StatusCode = 401;
+                jr.StatusCode = 400;
             }
             else
             {
@@ -58,7 +58,7 @@ namespace STOApi.Controllers
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
-                jr.StatusCode = 401;
+                jr.StatusCode = 400;
             }
             else
             {
@@ -73,7 +73,7 @@ namespace STOApi.Controllers
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
-                jr.StatusCode = 401;
+                jr.StatusCode = 400;
             }
             else
             {
@@ -88,7 +88,7 @@ namespace STOApi.Controllers
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
-                jr.StatusCode = 401;
+                jr.StatusCode = 400;
             }
             else
             {
