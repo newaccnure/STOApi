@@ -15,6 +15,13 @@ namespace STOApi.Repositories
 {
     public class AuthRepository : IAuthRepository
     {
+
+        private List<string> roles = new List<string>(){
+            "admin",
+            "participant",
+            "organizer",
+            "representative"
+        };
         private STOContext context;
 
         public AuthRepository(STOContext context)
@@ -22,27 +29,44 @@ namespace STOApi.Repositories
             this.context = context;
         }
 
-        public TokenResponse AddUser(string username, string password, string repeatPassword, string role)
+        public TokenResponse AddUser(string email, string password, string repeatPassword, string role)
         {
-            context.Users.Add(new User(){
-                Email = username,
+            if (context.Users.Where(x => x.Email == email && x.Role == role).Any())
+            {
+                return new TokenResponse();
+            }
+
+            if (!password.Equals(repeatPassword))
+            {
+                return new TokenResponse();
+            }
+
+            if (!roles.Where(r => r.Equals(role)).Any())
+            {
+                return new TokenResponse();
+            }
+
+            context.Users.Add(new User()
+            {
+                Email = email,
                 Password = password,
                 Role = role
             });
             context.SaveChanges();
-            
-            return Login(username, password);
+
+            return Login(email, password);
         }
 
-        public TokenResponse Login(string username, string password)
+        public TokenResponse Login(string email, string password)
         {
-            var identity = GetIdentity(username, password);
+            var identity = GetIdentity(email, password);
             if (identity == null)
             {
+                return new TokenResponse();
             }
 
             var now = DateTime.UtcNow;
-            // создаем JWT-токен
+            
             var jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
                 notBefore: now,
@@ -62,14 +86,9 @@ namespace STOApi.Repositories
             return response;
         }
 
-        public List<User> GetUsers()
+        private ClaimsIdentity GetIdentity(string email, string password)
         {
-            return context.Users.ToList();
-        }
-
-        private ClaimsIdentity GetIdentity(string username, string password)
-        {
-            User person = context.Users.FirstOrDefault(x => x.Email == username && x.Password == password);
+            User person = context.Users.FirstOrDefault(x => x.Email == email && x.Password == password);
             if (person != null)
             {
                 var claims = new List<Claim>
@@ -83,7 +102,6 @@ namespace STOApi.Repositories
                 return claimsIdentity;
             }
 
-            // если пользователя не найдено
             return null;
         }
     }

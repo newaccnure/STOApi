@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using STOApi.Interfaces;
 using Microsoft.AspNetCore.Cors;
+using STOApi.Models;
 
 namespace STOApi.Controllers
 {
@@ -25,12 +26,15 @@ namespace STOApi.Controllers
         [HttpPost]
         public JsonResult AddUser(string username, string password, string repeatPassword, string role)
         {
-            return Json(authRepository.AddUser(username, password, repeatPassword, role));
+            
+            TokenResponse tp = authRepository.AddUser(username, password, repeatPassword, role);
+            JsonResult jr = Json(tp);
+            if (tp.Email == null){
+                jr.StatusCode = 401;
+                return jr;
+            }
+            return jr;
         }
 
-        [HttpGet]
-        public JsonResult GetUsers(){
-            return Json(authRepository.GetUsers());
-        }
     }
 }
