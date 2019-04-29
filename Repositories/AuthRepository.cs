@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Security.Claims;
 using STOApi.Models;
 using STOApi.Interfaces;
+using STOApi.Entities;
 
 namespace STOApi.Repositories
 {

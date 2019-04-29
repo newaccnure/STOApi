@@ -26,13 +26,15 @@ namespace STOApi.Controllers
         [HttpPost]
         public JsonResult AddUser(string username, string password, string repeatPassword, string role)
         {
-            
+
             TokenResponse tp = authRepository.AddUser(username, password, repeatPassword, role);
             JsonResult jr = Json(tp);
-            if (tp.Email == null){
+            if (tp.Email == null)
+            {
                 jr.StatusCode = 401;
                 return jr;
             }
+            jr.StatusCode = 200;
             return jr;
         }
 

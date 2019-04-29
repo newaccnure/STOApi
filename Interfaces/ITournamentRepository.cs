@@ -8,13 +8,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Newtonsoft.Json;
 using System.Security.Claims;
-using STOApi.Entities;
+using STOApi.Models;
 
 namespace STOApi.Interfaces
 {
-    public interface IAdminRepository
+    public interface ITournamentRepository
     {
-        List<User> GetUsers();
-        List<Tournament> GetTournaments();
+        bool AddTournament();
     }
 }

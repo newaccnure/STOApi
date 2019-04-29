@@ -8,29 +8,23 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Newtonsoft.Json;
 using System.Security.Claims;
-using STOApi.Entities;
-using STOApi.Interfaces;
 using STOApi.Models;
+using STOApi.Interfaces;
 
 namespace STOApi.Repositories
 {
-    public class AdminRepository : IAdminRepository
+    public class TournamentRepository : ITournamentRepository
     {
         private STOContext context;
 
-        public AdminRepository(STOContext context)
+        public TournamentRepository(STOContext context)
         {
             this.context = context;
         }
 
-        public List<Tournament> GetTournaments()
+        public bool AddTournament()
         {
             throw new NotImplementedException();
-        }
-
-        public List<User> GetUsers()
-        {
-            return context.Users.ToList();
         }
 
     }
