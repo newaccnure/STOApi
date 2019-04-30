@@ -19,6 +19,7 @@ namespace STOApi.Interfaces
         bool DeleteSport(int sportId);
         bool DeleteEventFormat(int eventFormatId);
         bool DeleteTournament(int tournamentId);
+        bool DeleteUser(int userId);
         List<User> GetUsers();
         List<Tournament> GetTournaments();
         List<Sport> GetSports();

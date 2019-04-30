@@ -12,11 +12,6 @@ namespace STOApi.Entities
         public string AboutMeInfo { set; get; }
         public List<UserTournament> UserTournaments { set; get; }
 
-        //json version of List<User>
-        public string RepresentativeParticipants { set; get; }
-        //json version of List<User>
-        public string ParticipantRepresentatives { set; get; }
-
         public User()
         {
             UserTournaments = new List<UserTournament>();

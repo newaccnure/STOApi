@@ -74,6 +74,15 @@ namespace STOApi.Repositories
             return true;
         }
 
+        public bool DeleteUser(int userId)
+        {
+            if (context.Users.Where(t => t.Id == userId).Any()) return false;
+            User user = context.Users.Where(t => t.Id == userId).First();
+            context.Remove(user);
+            context.SaveChanges();
+            return true;
+        }
+
         public List<EventFormat> GetEventFormats()
         {
             return context.EventFormats.ToList();

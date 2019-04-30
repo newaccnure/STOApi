@@ -103,5 +103,17 @@ namespace STOApi.Repositories
                     .Select(ut => ut.User)
                     .ToList();
         }
+
+        public List<User> GetTournamentParticipants(int tournamentId)
+        {
+            if (!context.Tournaments.Where(t => t.Id == tournamentId).Any()) return new List<User>();
+            return context
+                    .UserTournament
+                    .Include(ut => ut.User)
+                    .Where(ut => ut.TournamentId == tournamentId 
+                                    && ut.User.Role=="participant")
+                    .Select(ut => ut.User)
+                    .ToList();
+        }
     }
 }

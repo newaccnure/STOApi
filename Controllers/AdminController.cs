@@ -24,7 +24,7 @@ namespace STOApi.Controllers
         [HttpPost]
         public JsonResult AddSport(string name)
         {
-            Sport sport  = adminRepository.AddSport(name);
+            Sport sport = adminRepository.AddSport(name);
             JsonResult jr = Json(sport);
             if (sport.Id == 0)
             {
@@ -39,7 +39,7 @@ namespace STOApi.Controllers
         [HttpPost]
         public JsonResult AddEventFormat(string name)
         {
-            EventFormat eventFormat  = adminRepository.AddEventFormat(name);
+            EventFormat eventFormat = adminRepository.AddEventFormat(name);
             JsonResult jr = Json(eventFormat);
             if (eventFormat.Id == 0)
             {
@@ -54,7 +54,7 @@ namespace STOApi.Controllers
         [HttpDelete]
         public JsonResult DeleteSport(int sportId)
         {
-            bool deleted  = adminRepository.DeleteSport(sportId);
+            bool deleted = adminRepository.DeleteSport(sportId);
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
@@ -69,7 +69,7 @@ namespace STOApi.Controllers
         [HttpDelete]
         public JsonResult DeleteEventFormat(int eventFormatId)
         {
-            bool deleted  = adminRepository.DeleteEventFormat(eventFormatId);
+            bool deleted = adminRepository.DeleteEventFormat(eventFormatId);
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
@@ -84,7 +84,7 @@ namespace STOApi.Controllers
         [HttpDelete]
         public JsonResult DeleteTournament(int tournamentId)
         {
-            bool deleted  = adminRepository.DeleteTournament(tournamentId);
+            bool deleted = adminRepository.DeleteTournament(tournamentId);
             JsonResult jr = Json(deleted);
             if (!deleted)
             {
@@ -96,6 +96,22 @@ namespace STOApi.Controllers
             }
             return jr;
         }
+        [HttpDelete]
+        public JsonResult DeleteUser(int userId)
+        {
+            bool deleted = adminRepository.DeleteUser(userId);
+            JsonResult jr = Json(deleted);
+            if (!deleted)
+            {
+                jr.StatusCode = 400;
+            }
+            else
+            {
+                jr.StatusCode = 200;
+            }
+            return jr;
+        }
+
         [HttpGet]
         public JsonResult GetUsers()
         {
