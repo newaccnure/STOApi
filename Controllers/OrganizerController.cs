@@ -24,9 +24,9 @@ namespace STOApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "organizer, admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public JsonResult AddTournament(string name, int sportId, int eventFormatId)
+        public JsonResult AddTournament(string name, int numberOfParticipants, int sportId, int eventFormatId)
         {
-            Tournament tournament = organizerRepository.AddTournament(name, sportId, eventFormatId);
+            Tournament tournament = organizerRepository.AddTournament(name, numberOfParticipants, sportId, eventFormatId);
             JsonResult jr = Json(tournament);
             if (tournament.Id == 0)
             {
@@ -53,15 +53,27 @@ namespace STOApi.Controllers
             return jr;
         }
         [HttpPost]
-        public JsonResult AutoGenerateTournamentSchedule(int tournamentId, int gameTime, int breakTime, DateTime startDate, DateTime endDate)
+        public JsonResult AutoGenerateTournamentSchedule(int tournamentId, int gameTime, int breakTime, 
+            int gameDayStart, int gameDayEnd, DateTime startDate, DateTime endDate)
         {
-            throw new NotImplementedException();
+            return Json(organizerRepository.AutoGenerateTournamentSchedule(tournamentId, gameTime, breakTime, 
+                gameDayStart, gameDayEnd, startDate, endDate));
         }
-        [HttpPost]
+        [HttpGet]
         public JsonResult GetTournamentRepresentatives(int tournamentId)
         {
             
             return Json(organizerRepository.GetTournamentRepresentatives(tournamentId));
+        }
+        [HttpGet]
+        public JsonResult GetTournamentParticipants(int tournamentId)
+        {
+            
+            return Json(organizerRepository.GetTournamentParticipants(tournamentId));
+        }
+        [HttpGet]
+        public JsonResult GetTournamentSchedule(int tournamentId){
+            return Json(organizerRepository.GetTournamentSchedule(tournamentId));
         }
     }
 }

@@ -7,6 +7,10 @@ namespace STOApi.Entities
     {
         public int Id { set; get; }
         public DateRange TournamentSchedule { set; get; }
+        //in minutes
+        public int GameDayStart { set; get; }
+        //in minutes
+        public int GameDayEnd { set; get; }
         public int BreakTime { set; get; }
         public int GameTime { set; get; }
         public List<Game> Games { set; get; }

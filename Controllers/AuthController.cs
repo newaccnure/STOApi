@@ -18,9 +18,9 @@ namespace STOApi.Controllers
         }
 
         [HttpPost]
-        public JsonResult Login(string username, string password)
+        public JsonResult Login(string email, string password)
         {
-            TokenResponse tp = authRepository.Login(username, password);
+            TokenResponse tp = authRepository.Login(email, password);
             JsonResult jr = Json(tp);
             if (tp.Email == null)
             {
@@ -34,10 +34,10 @@ namespace STOApi.Controllers
         }
 
         [HttpPost]
-        public JsonResult AddUser(string username, string password, string repeatPassword, string role, string aboutMe)
+        public JsonResult AddUser(string email, string password, string repeatPassword, string role, string aboutMe)
         {
 
-            TokenResponse tp = authRepository.AddUser(username, password, repeatPassword, role, aboutMe);
+            TokenResponse tp = authRepository.AddUser(email, password, repeatPassword, role, aboutMe);
             JsonResult jr = Json(tp);
             if (tp.Email == null)
             {

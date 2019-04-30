@@ -7,13 +7,14 @@ namespace STOApi.Entities
     {
         public int Id { set; get; }
         public string Name { set; get; }
+        public int NumberOfParticipants { set; get; }
         public Schedule Schedule { set; get; }
         public int EventFormatId { set; get; }
         public EventFormat EventFormat { set; get; }
         public int SportId { set; get; }
         public Sport Sport { set; get; }
         public List<UserTournament> UserTournaments { set; get; }
-        
+
         public Tournament()
         {
             UserTournaments = new List<UserTournament>();

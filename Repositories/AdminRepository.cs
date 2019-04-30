@@ -49,7 +49,7 @@ namespace STOApi.Repositories
 
         public bool DeleteEventFormat(int eventFormatId)
         {
-            if (context.EventFormats.Where(ef => ef.Id == eventFormatId).Any()) return false;
+            if (!context.EventFormats.Where(ef => ef.Id == eventFormatId).Any()) return false;
             EventFormat eventFormat = context.EventFormats.Where(ef => ef.Id == eventFormatId).First();
             context.Remove(eventFormat);
             context.SaveChanges();
@@ -58,7 +58,7 @@ namespace STOApi.Repositories
 
         public bool DeleteSport(int sportId)
         {
-            if (context.Sports.Where(s => s.Id == sportId).Any()) return false;
+            if (!context.Sports.Where(s => s.Id == sportId).Any()) return false;
             Sport sport = context.Sports.Where(s => s.Id == sportId).First();
             context.Remove(sport);
             context.SaveChanges();
@@ -67,7 +67,7 @@ namespace STOApi.Repositories
 
         public bool DeleteTournament(int tournamentId)
         {
-            if (context.Tournaments.Where(t => t.Id == tournamentId).Any()) return false;
+            if (!context.Tournaments.Where(t => t.Id == tournamentId).Any()) return false;
             Tournament tournament = context.Tournaments.Where(t => t.Id == tournamentId).First();
             context.Remove(tournament);
             context.SaveChanges();
@@ -76,7 +76,7 @@ namespace STOApi.Repositories
 
         public bool DeleteUser(int userId)
         {
-            if (context.Users.Where(t => t.Id == userId).Any()) return false;
+            if (!context.Users.Where(t => t.Id == userId).Any()) return false;
             User user = context.Users.Where(t => t.Id == userId).First();
             context.Remove(user);
             context.SaveChanges();
