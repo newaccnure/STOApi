@@ -1,9 +1,11 @@
 
+using System;
+
 namespace STOApi.Models
 {
     public class TokenResponse
     {
-        public string Email { set; get; }
+        public int? ExpirationTime { set; get; }
         public string Token { set; get; }
     }
 }

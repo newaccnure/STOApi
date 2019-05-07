@@ -38,6 +38,7 @@ namespace STOApi.Models
                     Role = "admin"
                 });
                 context.SaveChanges();
+                
                 context.EventFormats.Add(new EventFormat()
                 {
                     Name = "Round-robin"
@@ -55,6 +56,7 @@ namespace STOApi.Models
                     Name = "Group stage"
                 });
                 context.SaveChanges();
+
                 context.Sports.Add(new Sport()
                 {
                     Name = "Football"

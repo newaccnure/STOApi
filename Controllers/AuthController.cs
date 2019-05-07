@@ -22,7 +22,7 @@ namespace STOApi.Controllers
         {
             TokenResponse tp = authRepository.Login(email, password);
             JsonResult jr = Json(tp);
-            if (tp.Email == null)
+            if (tp.ExpirationTime == null)
             {
                 jr.StatusCode = 400;
             }
@@ -39,7 +39,7 @@ namespace STOApi.Controllers
 
             TokenResponse tp = authRepository.AddUser(email, password, repeatPassword, role, aboutMe);
             JsonResult jr = Json(tp);
-            if (tp.Email == null)
+            if (tp.ExpirationTime == null)
             {
                 jr.StatusCode = 400;
             }

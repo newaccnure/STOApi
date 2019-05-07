@@ -74,7 +74,7 @@ namespace STOApi.Repositories
                 notBefore: now,
                 audience: AuthOptions.AUDIENCE,
                 claims: identity.Claims,
-                expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                expires: now.Add(TimeSpan.FromDays(AuthOptions.LIFETIME)),
                 signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
 
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
@@ -82,7 +82,7 @@ namespace STOApi.Repositories
             var response = new TokenResponse()
             {
                 Token = encodedJwt,
-                Email = identity.Name
+                ExpirationTime = jwt.Payload.Exp
             };
 
             return response;
