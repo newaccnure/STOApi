@@ -40,7 +40,13 @@ namespace STOApi.Models
             modelBuilder.Entity<UserTournament>()
                 .HasOne(ut => ut.Tournament)
                 .WithMany(u => u.UserTournaments)
-                .HasForeignKey(ut => ut.TournamentId);
+                .HasForeignKey(ut => ut.TournamentId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Game>()
+                .HasOne(g => g.Schedule)
+                .WithMany(s => s.Games)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             base.OnModelCreating(modelBuilder);
         }

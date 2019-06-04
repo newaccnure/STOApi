@@ -58,7 +58,9 @@ namespace STOApi.Repositories
             return true;
         }
 
-        public Tournament AddTournament(string name, int numberOfParticipants, int sportId, int eventFormatId)
+        public Tournament AddTournament(string email, string name, int numberOfParticipants,
+                                        int sportId, int eventFormatId, int gameTime, int breakTime,
+                                        TimeSpan gameDayStart, TimeSpan gameDayEnd, DateTime startDate, DateTime endDate)
         {
             if (!context.Sports.Where(s => s.Id == sportId).Any()
                 || !context.EventFormats.Where(ef => ef.Id == eventFormatId).Any()
@@ -70,6 +72,11 @@ namespace STOApi.Repositories
                                 && t.SportId == sportId
                                 && t.EventFormatId == eventFormatId).Any())
                 return new Tournament();
+
+            if (endDate < startDate)
+                throw new InvalidDaysException();
+            if (gameDayEnd.TotalMinutes < gameDayStart.TotalMinutes)
+                throw new InvalidGameDayTimeException();
 
             context.Tournaments.Add(new Tournament()
             {
@@ -85,33 +92,58 @@ namespace STOApi.Repositories
                                     .Where(t => t.Name == name
                                                 && t.SportId == sportId
                                                 && t.EventFormatId == eventFormatId)
-                                    .FirstOrDefault();
+                                    .First();
+
+            var organizer = GetOrganizer(email);
+
+            tournament.Schedule = new Schedule()
+            {
+                TournamentId = tournament.Id,
+                TournamentSchedule = new DateRange()
+                {
+                    Start = startDate,
+                    End = endDate
+                },
+                GameDayStart = gameDayStart,
+                GameDayEnd = gameDayEnd,
+                BreakTime = breakTime,
+                GameTime = gameTime,
+            };
+
+            context.UserTournament.Add(new UserTournament()
+            {
+                UserId = organizer.Id,
+                TournamentId = tournament.Id
+            });
+            context.SaveChanges();
+
             return tournament;
         }
 
-        public bool AutoGenerateTournamentSchedule(int tournamentId, int gameTime, int breakTime,
-            int gameDayStart, int gameDayEnd, DateTime startDate, DateTime endDate)
+        public bool AutoGenerateTournamentSchedule(int tournamentId)
         {
             if (!context.Tournaments.Where(t => t.Id == tournamentId).Any())
                 throw new NoTournamentException();
 
-            if (endDate < startDate)
-                throw new InvalidDaysException();
-            if (gameDayEnd < gameDayStart)
-                throw new InvalidGameDayTimeException();
-
             Tournament tournament = context
                                         .Tournaments
                                         .Include(t => t.EventFormat)
+                                        .Include(t => t.Schedule)
                                         .Where(t => t.Id == tournamentId)
                                         .FirstOrDefault();
 
             int numberOfGames = GetNumberOfGames(tournamentId);
+            var endDate = tournament.Schedule.TournamentSchedule.End;
+            var startDate = tournament.Schedule.TournamentSchedule.Start;
+            var gameTime = tournament.Schedule.GameTime;
+            var breakTime = tournament.Schedule.BreakTime;
+            var gameDayEnd = tournament.Schedule.GameDayEnd;
+            var gameDayStart = tournament.Schedule.GameDayStart;
 
             int numberOfGameDays = ((TimeSpan)(endDate - startDate)).Days + 1;
             int numberOfGamesPerDay = (numberOfGames - 1) / numberOfGameDays + 1;
             int estimatedGameDayTime = numberOfGamesPerDay * gameTime + (numberOfGamesPerDay - 1) * breakTime;
-            int realGameDayTime = gameDayEnd - gameDayStart;
+            int realGameDayTime = (int)(gameDayEnd.TotalMinutes - gameDayStart.TotalMinutes);
 
             if (estimatedGameDayTime > realGameDayTime)
                 throw new NotEnoughTimeException();
@@ -123,32 +155,21 @@ namespace STOApi.Repositories
                                                 gameTime, breakTime,
                                                 gameDayStart, gameDayEnd,
                                                 startDate, endDate);
-            tournament.Schedule = new Schedule()
-            {
-                TournamentId = tournamentId,
-                TournamentSchedule = new DateRange()
-                {
-                    Start = startDate,
-                    End = endDate
-                },
-                GameDayStart = gameDayStart,
-                GameDayEnd = gameDayEnd,
-                Games = games,
-                BreakTime = breakTime,
-                GameTime = gameTime,
-            };
+            tournament.Schedule.Games = games;
             context.SaveChanges();
             return true;
         }
 
         public Schedule GetTournamentSchedule(int tournamentId)
         {
-            int scheduleId = context.Schedules.Where(t => t.Id == tournamentId).FirstOrDefault().Id;
+            int scheduleId = context.Schedules.Where(t => t.TournamentId == tournamentId).FirstOrDefault().Id;
             return context.Schedules
                 .Include(s => s.Games)
                 .ThenInclude(g => g.FirstParticipant)
                 .Include(s => s.Games)
                 .ThenInclude(g => g.SecondParticipant)
+                .Include(s => s.Games)
+                .ThenInclude(g => g.Winner)
                 .Where(s => s.Id == scheduleId).FirstOrDefault();
         }
         public List<User> GetTournamentRepresentatives(int tournamentId)
@@ -162,7 +183,6 @@ namespace STOApi.Repositories
                     .Select(ut => ut.User)
                     .ToList();
         }
-
         public List<User> GetTournamentParticipants(int tournamentId)
         {
             if (!context.Tournaments.Where(t => t.Id == tournamentId).Any()) return new List<User>();
@@ -191,8 +211,6 @@ namespace STOApi.Repositories
                     return numberOfParticipants * (numberOfParticipants - 1) / 2;
                 case "Single elimination":
                     return numberOfParticipants - 1;
-                case "Double elimination":
-                    return 2 * (numberOfParticipants - 1);
                 case "Group stage":
                     int groupSize = numberOfParticipants / 4;
                     return (groupSize * (groupSize - 1) / 2) * 4;
@@ -200,21 +218,24 @@ namespace STOApi.Repositories
                     return 0;
             }
         }
-        private List<Game> ScheduleGames(
+        public List<Game> ScheduleGames(
             Tournament tournament, int numberOfGames,
             int numberOfGameDays, int numberOfGamesPerDay,
             int estimatedGameDayTime, int realGameDayTime,
             int gameTime, int breakTime,
-            int gameDayStart, int gameDayEnd,
+            TimeSpan gameDayStart, TimeSpan gameDayEnd,
             DateTime startDate, DateTime endDate)
         {
             List<Game> games = new List<Game>();
             int numberOfParticipants = tournament.NumberOfParticipants;
             List<User> users = GetStaticUsers(numberOfParticipants);
-
+            var tbdParticipant = context.Users.Where(u => u.Email == "TBD" && u.Password == "TBD" && u.Role == "participant").First();
+            Random r = new Random();
+            int currentGame = 0;
             switch (tournament.EventFormat.Name)
             {
                 case "Round-robin":
+
                     for (int i = 0; i < numberOfParticipants; ++i)
                     {
                         context.UserTournament.Add(new UserTournament()
@@ -232,18 +253,77 @@ namespace STOApi.Repositories
                             });
                         }
                     }
-                    Random r = new Random();
+
                     games = games.OrderBy(x => r.Next()).ToList();
-                    int currentGame = 0;
                     for (int i = 0; i < numberOfGameDays; ++i)
                     {
-                        DateTime dt = startDate.AddDays(i).AddMinutes(gameDayStart);
+                        DateTime dt = startDate.AddDays(i).AddMinutes(gameDayStart.TotalMinutes);
                         for (int j = 0; j < numberOfGamesPerDay; ++j)
                         {
                             if (currentGame < games.Count)
                             {
                                 games[currentGame].GameSchedule = new DateRange();
-                                games[currentGame].Winner = new User();
+                                games[currentGame].Winner = tbdParticipant;
+                                games[currentGame].Score = new Score();
+                                games[currentGame].GameSchedule.Start = dt.AddMinutes(j * gameTime).AddMinutes(j * breakTime);
+                                games[currentGame].GameSchedule.End = dt.AddMinutes((j + 1) * gameTime).AddMinutes(j * breakTime);
+                                currentGame++;
+                            }
+                        }
+                    }
+
+                    return games;
+                case "Single elimination":
+                    if (!isPowerOfTwo(numberOfParticipants))
+                    {
+                        throw new InvalidNumberOfParticipantsException();
+                    }
+
+                    for (int i = 0; i < numberOfParticipants; ++i)
+                    {
+                        context.UserTournament.Add(new UserTournament()
+                        {
+                            Tournament = tournament,
+                            User = users[i],
+                            Joined = false
+                        });
+                    }
+
+                    var numberOfRounds = Math.Round(Math.Log(numberOfParticipants) / Math.Log(2));
+
+                    // First round
+                    for (int i = 0; i < numberOfParticipants / 2; ++i)
+                    {
+                        games.Add(new Game()
+                        {
+                            FirstParticipant = users[i],
+                            SecondParticipant = users[numberOfParticipants - i - 1]
+                        });
+                    }
+
+                    // All next rounds
+                    for (int i = 2; i <= numberOfRounds; ++i)
+                    {
+                        int numberOfGamesPerRound = Convert.ToInt32(numberOfParticipants / (Math.Pow(2, i)));
+                        for (int j = 0; j < numberOfGamesPerRound; ++j)
+                        {
+                            games.Add(new Game()
+                            {
+                                FirstParticipant = tbdParticipant,
+                                SecondParticipant = tbdParticipant
+                            });
+                        }
+                    }
+
+                    for (int i = 0; i < numberOfGameDays; ++i)
+                    {
+                        DateTime dt = startDate.AddDays(i).AddMinutes(gameDayStart.TotalMinutes);
+                        for (int j = 0; j < numberOfGamesPerDay; ++j)
+                        {
+                            if (currentGame < games.Count)
+                            {
+                                games[currentGame].GameSchedule = new DateRange();
+                                games[currentGame].Winner = tbdParticipant;
                                 games[currentGame].Score = new Score();
                                 games[currentGame].GameSchedule.Start = dt.AddMinutes(j * gameTime).AddMinutes(j * breakTime);
                                 games[currentGame].GameSchedule.End = dt.AddMinutes((j + 1) * gameTime).AddMinutes(j * breakTime);
@@ -252,16 +332,81 @@ namespace STOApi.Repositories
                         }
                     }
                     return games;
-                case "Single elimination":
-                    break;
-                case "Double elimination":
-                    break;
                 case "Group stage":
-                    break;
+                    var numberOfGroups = 4;
+                    if (numberOfParticipants % numberOfGroups != 0)
+                    {
+                        throw new InvalidNumberOfParticipantsException();
+                    }
+
+                    var participantsPerGroup = numberOfParticipants / numberOfGroups;
+
+                    var groupGames = new List<List<Game>>();
+
+                    for (int i = 0; i < numberOfGroups; ++i)
+                    {
+                        groupGames.Add(new List<Game>());
+                    }
+
+                    var numberOfGamesPerGroup = participantsPerGroup * (participantsPerGroup - 1) / 2;
+
+
+                    for (int j = 0; j < numberOfParticipants; ++j)
+                    {
+                        context.UserTournament.Add(new UserTournament()
+                        {
+                            Tournament = tournament,
+                            User = users[j],
+                            Joined = false
+                        });
+                    }
+
+                    for (int i = 0; i < numberOfGroups; ++i)
+                    {
+                        for (int j = i * participantsPerGroup; j < (i + 1) * participantsPerGroup; ++j)
+                        {
+                            for (int k = j + 1; k < (i + 1) * participantsPerGroup; ++k)
+                            {
+                                groupGames[i].Add(new Game()
+                                {
+                                    FirstParticipant = users[j],
+                                    SecondParticipant = users[k],
+                                    GroupNumber = i + 1
+                                });
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < numberOfGameDays; ++i)
+                    {
+                        DateTime dt = startDate.AddDays(i).AddMinutes(gameDayStart.TotalMinutes);
+                        for (int j = 0; j < numberOfGamesPerDay; ++j)
+                        {
+                            if (currentGame < numberOfGames)
+                            {
+                                var game = groupGames[currentGame % 4][(currentGame - currentGame % 4) / 4];
+                                game.GameSchedule = new DateRange();
+                                game.Winner = tbdParticipant;
+                                game.Score = new Score();
+                                game.GameSchedule.Start = dt.AddMinutes(j * gameTime).AddMinutes(j * breakTime);
+                                game.GameSchedule.End = dt.AddMinutes((j + 1) * gameTime).AddMinutes(j * breakTime);
+                                currentGame++;
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < numberOfGamesPerGroup; ++i)
+                    {
+                        for (int j = 0; j < numberOfGroups; ++j)
+                        {
+                            games.Add(groupGames[j][i]);
+                        }
+                    }
+
+                    return games;
                 default:
-                    break;
+                    throw new InvalidOperationException();
             }
-            return new List<Game>();
         }
         private List<User> GetStaticUsers(int numberOfParticipants)
         {
@@ -275,6 +420,183 @@ namespace STOApi.Repositories
                                     .First());
             }
             return staticUsers;
+        }
+
+        public List<EventFormat> GetEventFormats()
+        {
+            return context.EventFormats.ToList();
+        }
+
+        public List<Sport> GetSports()
+        {
+            return context.Sports.ToList();
+        }
+
+        public List<Tournament> GetOngoingTournaments(string email)
+        {
+            var organizer = GetOrganizer(email);
+            var organizedTournamentsIds = context.UserTournament.Where(ut => ut.UserId == organizer.Id).Select(ut => ut.TournamentId).ToList();
+            List<Tournament> organizedTournamentsList = new List<Tournament>();
+            var now = DateTime.Now;
+            foreach (var tournamentId in organizedTournamentsIds)
+            {
+                var tournament = context.Tournaments
+                                    .Include(t => t.Schedule)
+                                    .Include(t => t.EventFormat)
+                                    .Include(t => t.Sport)
+                                    .Where(t => t.Id == tournamentId)
+                                    .First();
+                if (tournament.Schedule.TournamentSchedule.End > now
+                    && tournament.Schedule.TournamentSchedule.Start < now)
+                {
+                    organizedTournamentsList.Add(tournament);
+                }
+            }
+            return organizedTournamentsList;
+        }
+
+        public List<Tournament> GetFinishedTournaments(string email)
+        {
+            var organizer = GetOrganizer(email);
+            var organizedTournamentsIds = context.UserTournament.Where(ut => ut.UserId == organizer.Id).Select(ut => ut.TournamentId).ToList();
+            List<Tournament> organizedTournamentsList = new List<Tournament>();
+            var now = DateTime.Now;
+            foreach (var tournamentId in organizedTournamentsIds)
+            {
+                var tournament = context.Tournaments
+                                    .Include(t => t.Schedule)
+                                    .Include(t => t.EventFormat)
+                                    .Include(t => t.Sport)
+                                    .Where(t => t.Id == tournamentId)
+                                    .First();
+                if (tournament.Schedule.TournamentSchedule.End < now)
+                {
+                    organizedTournamentsList.Add(tournament);
+                }
+            }
+            return organizedTournamentsList;
+        }
+
+        public List<Tournament> GetIncomingTournaments(string email)
+        {
+            var organizer = GetOrganizer(email);
+            var organizedTournamentsIds = context.UserTournament.Where(ut => ut.UserId == organizer.Id).Select(ut => ut.TournamentId).ToList();
+            List<Tournament> organizedTournamentsList = new List<Tournament>();
+            var now = DateTime.Now;
+            foreach (var tournamentId in organizedTournamentsIds)
+            {
+                var tournament = context.Tournaments
+                                    .Include(t => t.Schedule)
+                                    .Include(t => t.EventFormat)
+                                    .Include(t => t.Sport)
+                                    .Where(t => t.Id == tournamentId)
+                                    .First();
+                if (tournament.Schedule.TournamentSchedule.Start > now)
+                {
+                    organizedTournamentsList.Add(tournament);
+                }
+            }
+            return organizedTournamentsList;
+        }
+
+        private User GetOrganizer(string email)
+        {
+            return context.Users.Where(u => u.Email == email && u.Role == "organizer").FirstOrDefault();
+        }
+        public bool AddScore(int tournamentId, int gameId, int winnerId, int firstParticipantScore, int secondParticipantScore)
+        {
+            if (!context.Games.Where(g => g.Id == gameId).Any())
+                return false;
+            var winner = context.Users.Where(u => u.Id == winnerId).First();
+            var game = context.Games.Include(g => g.Winner).Where(g => g.Id == gameId).First();
+            game.Score.FirstParticipantScore = firstParticipantScore;
+            game.Score.SecondParticipantScore = secondParticipantScore;
+            game.Winner = winner;
+            context.SaveChanges();
+
+            var tournament = context.Tournaments.Where(t => t.Id == tournamentId).First();
+
+            var singleElimination = context.EventFormats.Where(ef => ef.Name == "Single elimination").First();
+
+            if (tournament.EventFormatId == singleElimination.Id)
+            {
+                var schedule = context
+                                    .Schedules
+                                    .Where(s => s.TournamentId == tournamentId)
+                                    .First();
+
+                var tournamentGames = context
+                                            .Games
+                                            .Where(g => g.ScheduleId == schedule.Id)
+                                            .Include(g => g.GameSchedule)
+                                            .OrderBy(g => g.GameSchedule.Start)
+                                            .ToList();
+
+                var gameIndex = tournamentGames.FindIndex(g => g.Id == gameId);
+
+                var numberOfGames = tournamentGames.Count;
+                var numberOfRounds = (int)Math.Round(Math.Log(numberOfGames + 1, 2));
+
+                var currentIndex = 0;
+
+                var nextRoundGameInRoundIndex = -1;
+                var flag = false;
+                var nextRoundGameIndex = 0;
+                for (int i = numberOfRounds - 1; i >= 0; i--)
+                {
+                    for (int j = 0; j < Math.Pow(2, i); j++)
+                    {
+                        if (nextRoundGameInRoundIndex == j)
+                        {
+                            nextRoundGameIndex = currentIndex;
+                            flag = true;
+                            break;
+                        }
+                        if (currentIndex == gameIndex)
+                        {
+                            nextRoundGameInRoundIndex = j / 2;
+                        }
+
+                        currentIndex++;
+                    }
+                    if (flag) break;
+                }
+
+                var nextRoundGame = context.Games.Where(g => g.Id == tournamentGames[nextRoundGameIndex].Id).First();
+                if (gameIndex % 2 == 0)
+                {
+                    nextRoundGame.FirstParticipant = winner;
+                }
+                else
+                {
+                    nextRoundGame.SecondParticipant = winner;
+                }
+
+                context.SaveChanges();
+
+            }
+
+            return true;
+        }
+
+        public bool DeleteTournament(int tournamentId)
+        {
+            if (!context.Tournaments.Where(t => t.Id == tournamentId).Any()) return false;
+            Tournament tournament = context.Tournaments.Where(t => t.Id == tournamentId).First();
+            context.Remove(tournament);
+            context.SaveChanges();
+            return true;
+        }
+
+        static bool isPowerOfTwo(int n)
+        {
+            if (n == 0)
+                return false;
+
+            return (int)(Math.Ceiling((Math.Log(n) /
+                                       Math.Log(2)))) ==
+                   (int)(Math.Floor(((Math.Log(n) /
+                                      Math.Log(2)))));
         }
     }
 }

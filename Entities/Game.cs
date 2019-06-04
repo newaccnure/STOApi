@@ -11,5 +11,9 @@ namespace STOApi.Entities
         public User SecondParticipant { set; get; }
         public User Winner { set; get; }
         public Score Score { set; get; }
+        public int GroupNumber { set; get; }
+
+        public Schedule Schedule { get; set; }
+        public int ScheduleId { get; set; }
     }
 }

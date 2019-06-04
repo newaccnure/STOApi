@@ -30,6 +30,23 @@ namespace STOApi.Models
                     });
                 }
                 context.SaveChanges();
+
+                context.Users.Add(new User()
+                {
+                    Email = "TBD",
+                    Password = "TBD",
+                    AboutMeInfo = "TBD",
+                    Role = "participant"
+                });
+
+                context.Users.Add(new User()
+                {
+                    Email = "organizer",
+                    Password = "organizer",
+                    AboutMeInfo = "organizer",
+                    Role = "organizer"
+                });
+
                 context.Users.Add(new User()
                 {
                     Email = "admin@nure.ua",
@@ -46,10 +63,6 @@ namespace STOApi.Models
                 context.EventFormats.Add(new EventFormat()
                 {
                     Name = "Single elimination"
-                });
-                context.EventFormats.Add(new EventFormat()
-                {
-                    Name = "Double elimination"
                 });
                 context.EventFormats.Add(new EventFormat()
                 {

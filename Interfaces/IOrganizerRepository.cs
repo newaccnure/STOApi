@@ -15,13 +15,21 @@ namespace STOApi.Interfaces
 {
     public interface IOrganizerRepository
     {
-        Tournament AddTournament(string name, int numberOfParticipants, int sportId, int eventFormatId);
-        bool AutoGenerateTournamentSchedule(int tournamentId, int gameTime, int gameDayStart, int gameDayEnd,
-            int breakTime, DateTime startDate, DateTime endDate);
+        Tournament AddTournament(string email, string name, int numberOfParticipants, 
+            int sportId, int eventFormatId, int gameTime, int breakTime,
+            TimeSpan gameDayStart, TimeSpan gameDayEnd, DateTime startDate, DateTime endDate);
+        bool AutoGenerateTournamentSchedule(int tournamentId);
         bool AddRepresentativesToTournament(int tournamentId, 
             List<string> representativesEmails);
         Schedule GetTournamentSchedule(int tournamentId);
         List<User> GetTournamentRepresentatives(int tournamentId);
         List<User> GetTournamentParticipants(int tournamentId);
+        List<Sport> GetSports();
+        List<EventFormat> GetEventFormats();
+        List<Tournament> GetOngoingTournaments(string email);
+        List<Tournament> GetFinishedTournaments(string email);
+        List<Tournament> GetIncomingTournaments(string email);
+        bool AddScore(int tournamentId, int gameId, int winnerId, int firstParticipantScore, int secondParticipantScore);
+        bool DeleteTournament(int tournamentId);
     }
 }
