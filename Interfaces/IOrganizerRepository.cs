@@ -29,6 +29,8 @@ namespace STOApi.Interfaces
         List<Tournament> GetOngoingTournaments(string email);
         List<Tournament> GetFinishedTournaments(string email);
         List<Tournament> GetIncomingTournaments(string email);
+        List<Game> GetIncomingGames(string email);
+        List<Game> GetFinishedGamesWithNoScore(string email);
         bool AddScore(int tournamentId, int gameId, int winnerId, int firstParticipantScore, int secondParticipantScore);
         bool DeleteTournament(int tournamentId);
     }

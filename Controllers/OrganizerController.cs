@@ -147,6 +147,16 @@ namespace STOApi.Controllers
             return Json(User.Identity.Name);
         }
 
+        [HttpGet]
+        public JsonResult GetIncomingGames(){
+            return Json(organizerRepository.GetIncomingGames(User.Identity.Name));
+        }
+
+        [HttpGet]
+        public JsonResult GetFinishedGamesWithNoScore(){
+            return Json(organizerRepository.GetFinishedGamesWithNoScore(User.Identity.Name));
+        }
+        
         [HttpPost]
         public JsonResult AddScore(int tournamentId, int gameId, int winnerId, int firstParticipantScore, int secondParticipantScore)
         {

@@ -164,13 +164,14 @@ namespace STOApi.Repositories
         {
             int scheduleId = context.Schedules.Where(t => t.TournamentId == tournamentId).FirstOrDefault().Id;
             return context.Schedules
+                .Where(s => s.Id == scheduleId)
                 .Include(s => s.Games)
                 .ThenInclude(g => g.FirstParticipant)
                 .Include(s => s.Games)
                 .ThenInclude(g => g.SecondParticipant)
                 .Include(s => s.Games)
                 .ThenInclude(g => g.Winner)
-                .Where(s => s.Id == scheduleId).FirstOrDefault();
+                .FirstOrDefault();
         }
         public List<User> GetTournamentRepresentatives(int tournamentId)
         {
@@ -408,19 +409,6 @@ namespace STOApi.Repositories
                     throw new InvalidOperationException();
             }
         }
-        private List<User> GetStaticUsers(int numberOfParticipants)
-        {
-            List<User> staticUsers = new List<User>();
-            List<User> allStaticUsers = context.Users.Where(u => u.Email.Contains("Participant") && u.Password.Contains("Participant")).ToList();
-
-            for (int i = 0; i < numberOfParticipants; ++i)
-            {
-                staticUsers.Add(allStaticUsers
-                                    .Where(u => u.Email == $"Participant{i}" && u.Password == $"Participant{i}")
-                                    .First());
-            }
-            return staticUsers;
-        }
 
         public List<EventFormat> GetEventFormats()
         {
@@ -498,11 +486,73 @@ namespace STOApi.Repositories
             }
             return organizedTournamentsList;
         }
-
-        private User GetOrganizer(string email)
+        
+        public List<Game> GetIncomingGames(string email)
         {
-            return context.Users.Where(u => u.Email == email && u.Role == "organizer").FirstOrDefault();
+            var organizer = GetOrganizer(email);
+            var organizedTournamentsIds = context
+                                                .UserTournament
+                                                .Where(ut => ut.UserId == organizer.Id)
+                                                .Select(ut => ut.TournamentId).
+                                                ToList();
+            List<Game> incomingGames = new List<Game>();
+            var now = DateTime.Now;
+            var fiveDaysFromNow = now.AddDays(5);
+            foreach (var tournamentId in organizedTournamentsIds)
+            {
+                var schedule = context
+                                    .Schedules
+                                    .Where(s => s.TournamentId == tournamentId)
+                                    .First();
+
+                var incomingTournamentGames = context
+                                            .Games
+                                            .Where(g => g.ScheduleId == schedule.Id && g.GameSchedule.Start > now && g.GameSchedule.End < fiveDaysFromNow)
+                                            .Include(g => g.GameSchedule)
+                                            .Include(g => g.FirstParticipant)
+                                            .Include(g => g.SecondParticipant)
+                                            .Include(g => g.Schedule)
+                                            .ThenInclude(s => s.Tournament);
+
+                incomingGames.AddRange(incomingTournamentGames);
+            }
+            return incomingGames;
         }
+
+        public List<Game> GetFinishedGamesWithNoScore(string email)
+        {
+            var organizer = GetOrganizer(email);
+            var organizedTournamentsIds = context
+                                                .UserTournament
+                                                .Where(ut => ut.UserId == organizer.Id)
+                                                .Select(ut => ut.TournamentId).
+                                                ToList();
+            List<Game> gamesWithNoScore = new List<Game>();
+            var now = DateTime.Now;
+            var fiveDaysFromNow = now.AddDays(5);
+            foreach (var tournamentId in organizedTournamentsIds)
+            {
+                var schedule = context
+                                    .Schedules
+                                    .Where(s => s.TournamentId == tournamentId)
+                                    .First();
+
+                var tournamentGamesWithNoScore = context
+                                            .Games
+                                            .Where(g => g.ScheduleId == schedule.Id && g.GameSchedule.End < now)
+                                            .Include(g => g.Winner)
+                                            .Where(g => g.Winner.Email == "TBD")
+                                            .Include(g => g.GameSchedule)
+                                            .Include(g => g.FirstParticipant)
+                                            .Include(g => g.SecondParticipant)
+                                            .Include(g => g.Schedule)
+                                            .ThenInclude(s => s.Tournament);
+                
+                gamesWithNoScore.AddRange(tournamentGamesWithNoScore);
+            }
+            return gamesWithNoScore;
+        }
+        
         public bool AddScore(int tournamentId, int gameId, int winnerId, int firstParticipantScore, int secondParticipantScore)
         {
             if (!context.Games.Where(g => g.Id == gameId).Any())
@@ -588,7 +638,20 @@ namespace STOApi.Repositories
             return true;
         }
 
-        static bool isPowerOfTwo(int n)
+        private List<User> GetStaticUsers(int numberOfParticipants)
+        {
+            List<User> staticUsers = new List<User>();
+            List<User> allStaticUsers = context.Users.Where(u => u.Email.Contains("Participant") && u.Password.Contains("Participant")).ToList();
+
+            for (int i = 0; i < numberOfParticipants; ++i)
+            {
+                staticUsers.Add(allStaticUsers
+                                    .Where(u => u.Email == $"Participant{i}" && u.Password == $"Participant{i}")
+                                    .First());
+            }
+            return staticUsers;
+        }
+        private static bool isPowerOfTwo(int n)
         {
             if (n == 0)
                 return false;
@@ -598,5 +661,10 @@ namespace STOApi.Repositories
                    (int)(Math.Floor(((Math.Log(n) /
                                       Math.Log(2)))));
         }
+        private User GetOrganizer(string email)
+        {
+            return context.Users.Where(u => u.Email == email && u.Role == "organizer").FirstOrDefault();
+        }
+
     }
 }
